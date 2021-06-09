@@ -1,6 +1,6 @@
 package indexeddb
 
-type OpenDBInternal struct {
+type InternalOpenDBRequest struct {
 	OnOpen  *CallbackFn
 	OnClose *CallbackFn
 }
@@ -8,5 +8,5 @@ type OpenDBInternal struct {
 // DBOpenDBRequest implements the request for opening the DB.
 type DBOpenDBRequest struct {
 	*DBRequest
-	*OpenDBInternal
+	*InternalOpenDBRequest
 }

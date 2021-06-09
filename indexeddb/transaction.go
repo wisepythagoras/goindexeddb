@@ -1,3 +1,10 @@
 package indexeddb
 
-type DBTransaction struct{}
+type InternalTransaction struct {
+	OnComplete *CallbackFn
+}
+
+type DBTransaction struct {
+	*EventTarget
+	*InternalTransaction
+}

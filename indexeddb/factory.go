@@ -33,11 +33,11 @@ func (f *DBFactory) Init() {
 // Open opens the DBFactory.
 func (f *DBFactory) Open(name string, version int) (*DBOpenDBRequest, *sync.WaitGroup, error) {
 	eventTarget := &EventTarget{}
-	internalRequest := &DBInternalRequest{
+	internalRequest := &InternalRequest{
 		ReadyState: RequestStatePending,
 	}
 	request := &DBRequest{eventTarget, internalRequest}
-	f.openRequest = &DBOpenDBRequest{request, &OpenDBInternal{}}
+	f.openRequest = &DBOpenDBRequest{request, &InternalOpenDBRequest{}}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -91,6 +91,7 @@ func (f *DBFactory) Open(name string, version int) (*DBOpenDBRequest, *sync.Wait
 		f.openRequest.Result = database
 		f.openRequest.ReadyState = RequestStateDone
 		f.dispatchEvent(EventTypeOpen, f.openRequest.Result)
+		f.dispatchEvent(EventTypeSuccess, f.openRequest.Result)
 	}()
 
 	return f.openRequest, &wg, nil

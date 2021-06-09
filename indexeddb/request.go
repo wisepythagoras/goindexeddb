@@ -8,8 +8,8 @@ const (
 	RequestStateError   ReadyStateType = "error"
 )
 
-// DBInternalRequest implements the core database request.
-type DBInternalRequest struct {
+// InternalRequest implements the core database request.
+type InternalRequest struct {
 	Source      interface{}
 	Transaction interface{}
 	ReadyState  ReadyStateType
@@ -21,5 +21,5 @@ type DBInternalRequest struct {
 // DBRequest implements the database request.
 type DBRequest struct {
 	*EventTarget
-	*DBInternalRequest
+	*InternalRequest
 }

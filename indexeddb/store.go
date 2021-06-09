@@ -8,4 +8,4 @@ func (o *DBObjectStore) Init() {
 	// Check if object store exists exists.
 }
 
-func (o *DBObjectStore) Add(object *interface{}) {}
+func (o *DBObjectStore) Put(object *interface{}) {}

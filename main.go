@@ -19,7 +19,7 @@ func main() {
 
 	fmt.Println(successCallback)
 
-	request.AddEventListener("open", &successCallback)
+	request.AddEventListener("success", &successCallback)
 
 	wg.Wait()
 }
