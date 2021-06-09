@@ -14,12 +14,12 @@ func main() {
 	request, wg, _ := factory.Open("helloworld", 1)
 
 	var successCallback indexeddb.CallbackFn = func(e *indexeddb.Event) {
-		fmt.Println("Success", request.ReadyState, request.Result.Factory.Path)
+		fmt.Println("The DB was opened", request.ReadyState, e.Bubbles)
 	}
 
 	fmt.Println(successCallback)
 
-	request.AddEventListener("success", &successCallback)
+	request.AddEventListener("open", &successCallback)
 
 	wg.Wait()
 }

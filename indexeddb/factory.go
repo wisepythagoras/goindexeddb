@@ -1,6 +1,7 @@
 package indexeddb
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -19,8 +20,9 @@ func CreateEvent(eventType string, bubbles interface{}) *Event {
 
 // DBFactory implements the main DB instance.
 type DBFactory struct {
-	Path   string
-	dbName string
+	Path        string
+	dbName      string
+	openRequest *DBOpenDBRequest
 }
 
 // Init initializes the DBFactory.
@@ -35,7 +37,7 @@ func (f *DBFactory) Open(name string, version int) (*DBOpenDBRequest, *sync.Wait
 		ReadyState: RequestStatePending,
 	}
 	request := &DBRequest{eventTarget, internalRequest}
-	openRequest := &DBOpenDBRequest{request}
+	f.openRequest = &DBOpenDBRequest{request, &OpenDBInternal{}}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -62,13 +64,12 @@ func (f *DBFactory) Open(name string, version int) (*DBOpenDBRequest, *sync.Wait
 		db, err := gorm.Open(sqlite.Open(path+name+".db"), &gorm.Config{})
 
 		if err != nil {
-			connectionError := CreateEvent("error", "Unable to connect")
+			openError := errors.New("Unable to connect")
+			err = f.dispatchEvent(EventTypeError, openError)
 
-			if openRequest.OnError != nil {
-				(*openRequest.OnError)(connectionError)
+			if err != nil {
+				panic(err)
 			}
-
-			openRequest.DispatchEvent(connectionError)
 
 			return
 		}
@@ -87,13 +88,12 @@ func (f *DBFactory) Open(name string, version int) (*DBOpenDBRequest, *sync.Wait
 
 		f.dbName = name
 
-		openRequest.Result = database
-		openRequest.ReadyState = RequestStateDone
-		openRequest.DispatchEvent(CreateEvent("upgradeneeded", false))
-		openRequest.DispatchEvent(CreateEvent("success", true))
+		f.openRequest.Result = database
+		f.openRequest.ReadyState = RequestStateDone
+		f.dispatchEvent(EventTypeOpen, f.openRequest.Result)
 	}()
 
-	return openRequest, &wg, nil
+	return f.openRequest, &wg, nil
 }
 
 // Delete removes the database from the filesystem.
@@ -111,4 +111,33 @@ func (f *DBFactory) Delete() error {
 	}
 
 	return err
+}
+
+// dispatchEvent creates and dispatches an event.
+func (f *DBFactory) dispatchEvent(t EventType, payload interface{}) error {
+	if f.openRequest == nil {
+		return errors.New("Database is not open")
+	}
+
+	eventData := CreateEvent(string(t), payload)
+
+	if t == EventTypeOpen {
+		if f.openRequest.OnOpen != nil {
+			(*f.openRequest.OnOpen)(eventData)
+		}
+	} else if t == EventTypeError {
+		if f.openRequest.OnError != nil {
+			(*f.openRequest.OnError)(eventData)
+		}
+	} else if t == EventTypeSuccess {
+		if f.openRequest.OnSuccess != nil {
+			(*f.openRequest.OnSuccess)(eventData)
+		}
+	} else {
+		return errors.New("Invalid event type")
+	}
+
+	f.openRequest.DispatchEvent(eventData)
+
+	return nil
 }

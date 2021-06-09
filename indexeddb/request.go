@@ -5,6 +5,7 @@ type ReadyStateType string
 const (
 	RequestStatePending ReadyStateType = "pending"
 	RequestStateDone    ReadyStateType = "done"
+	RequestStateError   ReadyStateType = "error"
 )
 
 // DBInternalRequest implements the core database request.
