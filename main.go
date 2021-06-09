@@ -14,7 +14,7 @@ func main() {
 	request, wg, _ := factory.Open("helloworld", 1)
 
 	var successCallback indexeddb.CallbackFn = func(e *indexeddb.Event) {
-		fmt.Println("Success", e)
+		fmt.Println("Success", request.ReadyState, request.Result.Factory.Path)
 	}
 
 	fmt.Println(successCallback)
@@ -22,10 +22,4 @@ func main() {
 	request.AddEventListener("success", &successCallback)
 
 	wg.Wait()
-
-	var big int64 = 5999999999999999999
-	fmt.Println(indexeddb.Compare(int64(999999999999999999), big))
-	fmt.Println(indexeddb.Compare(int8(2), int8(1)))
-	fmt.Println(indexeddb.Compare(1, 1))
-	fmt.Println(indexeddb.Compare("test", "test2"))
 }

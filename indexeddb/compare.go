@@ -13,7 +13,17 @@ func Compare(left interface{}, right interface{}) (int, error) {
 	rightKind := rightRt.Kind()
 
 	if leftKind != rightKind {
-		return 0, errors.New("Invalid type comparison")
+		if leftKind == reflect.Array ||
+			leftKind == reflect.Slice ||
+			leftKind == reflect.String {
+			return 1, nil
+		} else if rightKind == reflect.Array ||
+			rightKind == reflect.Slice ||
+			rightKind == reflect.String {
+			return -1, nil
+		}
+
+		return -1, errors.New("Invalid type comparison")
 	}
 
 	if leftKind == reflect.Slice || leftKind == reflect.Array {
